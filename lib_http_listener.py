@@ -19,8 +19,8 @@ _servers_list = list()  # list with all http servers (for later .close())
 
 def _notify_listeners(message_dict):
     global _listeners
-    for lst in _listeners:
-        lst(message_dict)
+    for notify in _listeners:
+        notify(message_dict)
 
 
 def _demo_listener(message_dict):
@@ -90,10 +90,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         field_name = re_groups.group(1)
                         field_value = re_groups.group(2)
                         resp[field_name] = field_value
+
         elif self.headers["Content-Type"].startswith("application/x-www-form-urlencoded"):
             for kv in body.split("&"):
                 k, v = kv.split("=")
                 resp[k] = unquote(v)
+
         else:
             resp["raw"] = body
 
@@ -102,12 +104,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path != "/favicon.ico":
             message = self._get_dict()
+
             self._send_formated_response(message)
             _notify_listeners(message)
 
     def do_POST(self):
         message = self._get_dict()
         message["body"] = self._parse_post_body()
+
         self._send_formated_response(message)
         _notify_listeners(message)
 
@@ -115,6 +119,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 def close_all_http():
     global _servers_list
     print("Closing HTTP Servers", _servers_list, file=sys.stderr)
+    
     for http_server in _servers_list:
         try:
             http_server.server_close()
