@@ -46,6 +46,10 @@ def _demo_listener(message_dict):
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
+    def log_message(self, format, *args):
+        if _verbose:
+            super().log_message(format, args)
+
     def _send_formated_response(self, message):
         self.send_response(200)
 
